@@ -1,0 +1,6 @@
+name: LearningPaper
+version: 0.0.1
+author:  hanss
+main: ca.hanss.learningpaper.LearningPaper
+api-version: 1.15
+depend: [CommandAPI]
