@@ -9,6 +9,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
 public class ScoreboardInfo implements Listener {
     private LearningPaper parent;
@@ -16,10 +17,27 @@ public class ScoreboardInfo implements Listener {
         this.parent = parent;
     }
 
+    String formatPos(Location loc){
+        return loc.getBlockX() + ", " + loc.getBlockZ();
+    }
+
+    String formatRot(Location loc){
+        double yaw = ((loc.getYaw() % 360) + 360) % 360;
+        String xf = yaw < 180 ? "+" : "-";
+        String zf = yaw < 90 || yaw > 270 ? "+" : "-";
+        return ChatColor.RED + xf + "X " + ChatColor.BLUE + zf + "Z";
+    }
+
+    String createEmptyName(char c){
+        return ChatColor.translateAlternateColorCodes('&', "&"+c);
+    }
+
     @EventHandler
     public void onMove(PlayerMoveEvent movement){
         Player player = movement.getPlayer();
         Location loc = movement.getTo();
+        Location prev = movement.getFrom();
+
         Scoreboard scoreboard = player.getScoreboard();
 
         Objective x = scoreboard.getObjective(player.getName());
@@ -27,19 +45,17 @@ public class ScoreboardInfo implements Listener {
             x = scoreboard.registerNewObjective(player.getName(), "dummy", player.getName());
             x.setDisplaySlot(DisplaySlot.SIDEBAR);
         }
-        for(String e : scoreboard.getEntries()) {
-            scoreboard.resetScores(e);
+
+        Team team = scoreboard.getTeam(player.getName()+"_pos");
+        if(team == null){
+            team = scoreboard.registerNewTeam(player.getName()+"_pos");
         }
+        team.setPrefix(parent.coordColor.toString() + formatPos(prev));
 
-        String coord = parent.coordColor + String.valueOf(loc.getBlockX()) + ", " + loc.getBlockZ();
-        x.getScore(coord).setScore(15);
+        team.addEntry(createEmptyName('a'));
+        x.getScore(createEmptyName('a')).setScore(15);
 
-        String xf = loc.getYaw() < 180 ? "+" : "-";
-        String zf = loc.getYaw() < 90 || loc.getYaw() > 270 ? "+" : "-";
-        String facing = ChatColor.RED + xf + "X " + ChatColor.BLUE + zf + "Z";
-        x.getScore(facing).setScore(14);
-        //player.setScoreboard(scoreboard);
-
-        //movement.getPlayer().spigot().sendMessage(new TextComponent("a"));
+        scoreboard.resetScores(formatRot(prev));
+        x.getScore(formatRot(loc)).setScore(14);
     }
 }
