@@ -5,6 +5,9 @@ import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.*;
 
 import net.md_5.bungee.api.chat.*;
+import org.bukkit.Bukkit;
+import org.bukkit.scoreboard.*;
+
 import java.util.*;
 import java.awt.Color;
 
@@ -69,9 +72,27 @@ class Commands {
         .register();
     }
 
+    private void sbstuff(){
+        new CommandAPICommand("sbstuff")
+        .executes((sender, args) -> {
+            Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+
+            Team team = scoreboard.getTeam("team");
+            if(team == null){
+                team = scoreboard.registerNewTeam("team");
+            }
+            team.setPrefix("Boogity boogity");
+
+            team.addEntry(sender.getName());
+            scoreboard.registerNewObjective("Hidden", "dummy", "Hidden");
+        })
+        .register();
+    }
+
     void registerAll(){
         echo();
         square();
         cc();
+        sbstuff();
     }
 }
