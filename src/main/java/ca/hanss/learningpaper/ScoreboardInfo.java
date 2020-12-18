@@ -20,7 +20,7 @@ public class ScoreboardInfo implements Listener {
     }
 
     String formatPos(Location loc){
-        return loc.getBlockX() + ", " + loc.getBlockZ();
+        return parent.coordColor.toString()  + loc.getBlockX() + ", " + loc.getBlockZ();
     }
 
     String formatRot(Location loc){
@@ -38,31 +38,32 @@ public class ScoreboardInfo implements Listener {
     public void onMove(PlayerMoveEvent movement){
         Player player = movement.getPlayer();
         Location loc = movement.getTo();
-        Location prev = movement.getFrom();
-
         Scoreboard scoreboard = player.getScoreboard();
 
-        Objective x = scoreboard.getObjective(player.getName());
-        if(x == null) {
-            x = scoreboard.registerNewObjective(player.getName(), "dummy", player.getName());
-            x.setDisplaySlot(DisplaySlot.SIDEBAR);
-        }
+        Team position = scoreboard.getTeam("position");
+        Team rotation = scoreboard.getTeam("rotation");
 
-        Team team = scoreboard.getTeam(player.getName()+"_pos");
-        if(team == null){
-            team = scoreboard.registerNewTeam(player.getName()+"_pos");
-        }
-        team.setPrefix(parent.coordColor.toString() + formatPos(prev));
-
-        team.addEntry(createEmptyName('a'));
-        x.getScore(createEmptyName('a')).setScore(15);
-
-        scoreboard.resetScores(formatRot(prev));
-        x.getScore(formatRot(loc)).setScore(14);
+        position.setPrefix(formatPos(loc));
+        rotation.setPrefix(formatRot(loc));
     }
 
     @EventHandler
     public void onJoin(PlayerJoinEvent join){
-        join.getPlayer().setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+        Player player = join.getPlayer();
+
+        Scoreboard newBoard = Bukkit.getScoreboardManager().getNewScoreboard();
+        player.setScoreboard(newBoard);
+
+        Objective hud = newBoard.registerNewObjective("hud", "dummy", player.getName());
+        hud.setDisplaySlot(DisplaySlot.SIDEBAR);
+
+        Team position = newBoard.registerNewTeam("position");
+        Team rotation = newBoard.registerNewTeam("rotation");
+
+        position.addEntry(createEmptyName('a'));
+        rotation.addEntry(createEmptyName('b'));
+
+        hud.getScore(createEmptyName('a')).setScore(15);
+        hud.getScore(createEmptyName('b')).setScore(14);
     }
 }
